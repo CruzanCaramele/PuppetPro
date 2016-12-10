@@ -6,4 +6,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		#Puppet Server
 		puppet.vm.box = "centos/7"
 	end
+
+	config.vm.define "centos-server" do |centos-server|
+		# Centos agent server
+		centos-server.vm.box = "centos/7"
+	end
+
+	config.vm.define "debian-server" do |debian-server|
+		debian-server.vm.box = "ARTACK/debian-jessie"
+	end
 end
