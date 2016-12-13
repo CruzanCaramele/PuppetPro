@@ -33,6 +33,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 			sudo yum update -y
 			sudo rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-pc1-el-7.noarch.rpm
 			sudo yum install puppetserver -y
+			sudo rm -rf /etc/puppetlabs/code
+			sudo ln -s /puppet_code /etc/puppetlabs/code
+			sudo rm -rf /etc/puppetlabs/puppetserver
+			sudo ln -s /puppet_puppetserver /etc/puppetlabs/puppetserver
 			sudo sed -i 's/2g/512m/g' /etc/sysconfig/puppetserver
 		SHELL
 	end
