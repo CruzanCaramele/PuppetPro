@@ -13,15 +13,20 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
 	# boxes
 	config.vm.define "puppet" do |puppet|
+		# Memory allocation
+		puppet.vm.provider "virtualbox" do |vb|
+			vb.memory = 1024
+		end
+
+		# Sycnhed folders path
+		puppet.vm.synced_folder "../code", "/puppet_code"
+		puppet.vm.synced_folder "../puppetserver", "/puppet_puppetserver"
+
 		# Puppet Server
 		puppet.vm.box = "boxcutter/centos72"
 		puppet.vm.hostname = "puppet.server.com"
 		puppet.vm.network "private_network", ip: "10.0.0.10"
 		puppet.hostmanager.aliases = "server"
-
-		# Memory allocation
-		puppet.vm.provider "virtualbox" do |vb|
-			vb.memory = 1024
 
 		# Shell provisioning
 		puppet.vm.provision "shell", inline: <<-SHELL
@@ -30,7 +35,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 			sudo yum install puppetserver -y
 			sudo sed -i 's/2g/512m/g' /etc/sysconfig/puppetserver
 		SHELL
-		end
 	end
 
 	config.vm.define "centos" do |centos|
