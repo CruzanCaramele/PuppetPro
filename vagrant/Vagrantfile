@@ -1,0 +1,85 @@
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+	# Hostmanager configuration
+	config.hostmanager.enabled = true
+	config.hostmanager.manage_host = true
+	config.hostmanager.manage_guest = true
+	config.hostmanager.ignore_private_ip = false
+	config.hostmanager.include_offline = true
+
+	# Sycnhed folder path
+	config.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+
+	# boxes
+	config.vm.define "puppet" do |puppet|
+		# Memory allocation
+		puppet.vm.provider "virtualbox" do |vb|
+			vb.memory = 1024
+		end
+
+		# Sycnhed folders path
+		puppet.vm.synced_folder "../code", "/puppet_code"
+		puppet.vm.synced_folder "../puppetserver", "/puppet_puppetserver"
+
+		# Puppet Server
+		puppet.vm.box = "boxcutter/centos72"
+		puppet.vm.hostname = "puppet.server.com"
+		puppet.vm.network "private_network", ip: "10.0.0.10"
+		puppet.hostmanager.aliases = "server"
+
+		# Shell provisioning
+		puppet.vm.provision "shell", inline: <<-SHELL
+			sudo yum update -y
+			sudo rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-pc1-el-7.noarch.rpm
+			sudo yum install puppetserver -y
+			sudo rm -rf /etc/puppetlabs/code
+			sudo ln -s /puppet_code /etc/puppetlabs/code
+			sudo rm -rf /etc/puppetlabs/puppetserver
+			sudo ln -s /puppet_puppetserver /etc/puppetlabs/puppetserver
+			sudo sed -i 's/2g/512m/g' /etc/sysconfig/puppetserver
+			echo "*.example.com" >> sudo tee /etc/puppetlabs/puppet/autosign.conf
+			sudo systemctl start puppetserver
+		SHELL
+	end
+
+	config.vm.define "centos" do |centos|
+		# Centos agent server
+		centos.vm.box = "boxcutter/centos72"
+		centos.vm.hostname = "centos.agent.com"
+		centos.vm.network "private_network", ip: "10.0.0.11"
+		centos.hostmanager.aliases = "agent1"
+		# Memory allocation
+		centos.vm.provider "virtualbox" do |vb|
+			vb.memory = 512
+		end
+		# Shell provisioning
+		centos.vm.provision "shell", inline: <<-SHELL
+			sudo yum update -y
+			sudo rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-pc1-el-7.noarch.rpm
+			sudo yum install puppet-agent -y
+			sudo systemctl start puppet
+		SHELL
+	end
+
+	config.vm.define "debian" do |debian|
+		# Debian agent server
+		debian.vm.box = "ARTACK/debian-jessie"
+		debian.vm.hostname = "debian.agent.com"
+		debian.vm.network "private_network", ip: "10.0.0.12"
+		debian.hostmanager.aliases = "agent2"
+		# Memory allocation
+		debian.vm.provider "virtualbox" do |vb|
+			vb.memory = 512
+		end
+		# Shell provisioning
+		debian.vm.provision "shell", inline: <<-SHELL
+			wget https://apt.puppetlabs.com/puppetlabs-release-pc1-jessie.deb
+			sudo dpkg -i puppetlabs-release-pc1-jessie.deb
+			sudo apt-get update -y
+			sudo apt-get install puppet-agent -y
+			sudo /opt/puppetlabs/bin/puppet agent --enable
+			sudo service puppet start
+		SHELL
+	end
+end
