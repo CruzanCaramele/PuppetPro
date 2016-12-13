@@ -1,18 +1,59 @@
 VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+	# Hostmanager configuration
+	config.hostmanager.enabled = true
+	config.hostmanager.manage_host = true
+	config.hostmanager.manage_guest = true
+	config.hostmanager.ignore_private_ip = false
+	config.hostmanager.include_offline = true
+
+	# Sycnhed folder path
 	config.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+
+	# boxes
 	config.vm.define "puppet" do |puppet|
-		#Puppet Server
-		puppet.vm.box = "centos/7"
+		# Puppet Server
+		puppet.vm.box = "boxcutter/centos72"
+		puppet.vm.hostname = "puppet.server.com"
+		puppet.vm.network "private_network", ip: "10.0.0.10"
+		puppet.hostmanager.aliases = "server"
+
+		# Memory allocation
+		puppet.vm.provider "virtualbox" do |vb|
+			vb.memory = 1024
+
+		# Shell provisioning
+		puppet.vm.provision "shell", inline: <<-SHELL
+			sudo yum update -y
+			sudo rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-pc1-el-7.noarch.rpm
+			sudo yum install puppetserver -y
+			sudo sed -i 's/2g/512m/g' /etc/sysconfig/puppetserver
+		SHELL
+		end
 	end
 
-	config.vm.define "centos-server" do |centos-server|
+	config.vm.define "centos" do |centos|
 		# Centos agent server
-		centos-server.vm.box = "centos/7"
+		centos.vm.box = "boxcutter/centos72"
+		centos.vm.hostname = "centos.agent.com"
+		centos.vm.network "private_network", ip: "10.0.0.11"
+		centos.hostmanager.aliases = "agent1"
+		# Memory allocation
+		centos.vm.provider "virtualbox" do |vb|
+			vb.memory = 512
+		end
 	end
 
-	config.vm.define "debian-server" do |debian-server|
-		debian-server.vm.box = "ARTACK/debian-jessie"
+	config.vm.define "debian" do |debian|
+		# Debian agent server
+		debian.vm.box = "ARTACK/debian-jessie"
+		debian.vm.hostname = "debian.agent.com"
+		debian.vm.network "private_network", ip: "10.0.0.12"
+		debian.hostmanager.aliases = "agent2"
+		# Memory allocation
+		debian.vm.provider "virtualbox" do |vb|
+			vb.memory = 512
+		end
 	end
 end
