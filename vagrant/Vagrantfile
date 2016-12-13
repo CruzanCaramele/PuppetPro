@@ -38,6 +38,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 			sudo rm -rf /etc/puppetlabs/puppetserver
 			sudo ln -s /puppet_puppetserver /etc/puppetlabs/puppetserver
 			sudo sed -i 's/2g/512m/g' /etc/sysconfig/puppetserver
+			echo "*.example.com" >> sudo tee /etc/puppetlabs/puppet/autosign.conf
+			sudo systemctl start puppetserver
 		SHELL
 	end
 
@@ -51,6 +53,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		centos.vm.provider "virtualbox" do |vb|
 			vb.memory = 512
 		end
+		# Shell provisioning
+		centos.vm.provision "shell", inline: <<-SHELL
+			sudo yum update -y
+			sudo rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-pc1-el-7.noarch.rpm
+			sudo yum install puppet-agent -y
+			sudo systemctl start puppet
+		SHELL
 	end
 
 	config.vm.define "debian" do |debian|
@@ -63,5 +72,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		debian.vm.provider "virtualbox" do |vb|
 			vb.memory = 512
 		end
+		# Shell provisioning
+		debian.vm.provision "shell", inline: <<-SHELL
+			wget https://apt.puppetlabs.com/puppetlabs-release-pc1-jessie.deb
+			sudo dpkg -i puppetlabs-release-pc1-jessie.deb
+			sudo apt-get update -y
+			sudo apt-get install puppet-agent -y
+			sudo /opt/puppetlabs/bin/puppet agent --enable
+			sudo service puppet start
+		SHELL
 	end
 end
