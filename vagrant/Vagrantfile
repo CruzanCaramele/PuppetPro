@@ -23,7 +23,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		puppet.vm.synced_folder "../puppetserver", "/puppet_puppetserver"
 
 		# Puppet Server
-		puppet.vm.box = "boxcutter/centos72"
+		puppet.vm.box = "centos/7"
 		puppet.vm.hostname = "puppet.server.com"
 		puppet.vm.network "private_network", ip: "10.0.0.10"
 		puppet.hostmanager.aliases = "server"
@@ -45,7 +45,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
 	config.vm.define "centos" do |centos|
 		# Centos agent server
-		centos.vm.box = "boxcutter/centos72"
+		centos.vm.box = "centos/7"
 		centos.vm.hostname = "centos.agent.com"
 		centos.vm.network "private_network", ip: "10.0.0.11"
 		centos.hostmanager.aliases = "agent1"
