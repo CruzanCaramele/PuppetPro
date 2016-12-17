@@ -11,7 +11,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 	# Sycnhed folder path
 	config.vm.synced_folder ".", "/vagrant", type: "virtualbox"
 
-	# boxes
+	# boxes to be downloaded and configured
 	config.vm.define "puppet" do |puppet|
 		# Memory allocation
 		puppet.vm.provider "virtualbox" do |vb|
@@ -24,6 +24,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
 		# Puppet Server
 		puppet.vm.box = "centos/7"
+		puppet.vm.box_check_update = false
 		puppet.vm.hostname = "puppet.server.com"
 		puppet.vm.network "private_network", ip: "10.0.0.10"
 		puppet.hostmanager.aliases = "server"
@@ -39,6 +40,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 			sudo ln -s /puppet_puppetserver /etc/puppetlabs/puppetserver
 			sudo sed -i 's/2g/512m/g' /etc/sysconfig/puppetserver
 			echo "*.example.com" >> sudo tee /etc/puppetlabs/puppet/autosign.conf
+			sudo /opt/puppetlabs/bin/puppetserver gem install hiera-eyaml
 			sudo systemctl start puppetserver
 		SHELL
 	end
@@ -46,6 +48,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 	config.vm.define "centos" do |centos|
 		# Centos agent server
 		centos.vm.box = "centos/7"
+		centos.vm.box_check_update = false
 		centos.vm.hostname = "centos.agent.com"
 		centos.vm.network "private_network", ip: "10.0.0.11"
 		centos.hostmanager.aliases = "agent1"
@@ -65,6 +68,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 	config.vm.define "debian" do |debian|
 		# Debian agent server
 		debian.vm.box = "ARTACK/debian-jessie"
+		debian.vm.box_check_update = false
 		debian.vm.hostname = "debian.agent.com"
 		debian.vm.network "private_network", ip: "10.0.0.12"
 		debian.hostmanager.aliases = "agent2"
