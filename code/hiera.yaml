@@ -1,10 +1,18 @@
 ---
 :backends:
+  - eyaml
   - yaml
+  - json
 :hierarchy:
-  - "nodes/%{::trusted.certname}"
+  - "nodes/%{::hostname}"
+  - "os/%{::kernel}"
   - common
-  
+
+:eyaml:
+  :datadir:
+  :extension: eyaml
+  :pkcs7_private_key: "/etc/puppetlabs/keys/private_key.pkcs7.pem"
+  :pkcs7_public_key:  "/etc/puppetlabs/keys/public_key.pkcs7.pem"
 
 :yaml:
 # datadir is empty here, so hiera uses its defaults:
