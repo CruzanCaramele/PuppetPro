@@ -35,7 +35,7 @@
 # Authors
 # -------
 #
-# Author Name <author@domain.com>
+# Author Name <Hamza Yahaya>
 #
 # Copyright
 # ---------
@@ -43,6 +43,5 @@
 # Copyright 2016 Your name here, unless otherwise noted.
 #
 class ntp {
-
-
+	contain 'ntp::install'
 }
